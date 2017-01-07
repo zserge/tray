@@ -56,10 +56,7 @@ static void tray_update(struct tray *tray) {
 
 	app_indicator_set_icon(indicator, tray->icon);
   GtkMenuShell *gtk_menu = (GtkMenuShell *)gtk_menu_new();
-  for (m = tray->menu;; m++) {
-    if (m->text == NULL) {
-      break;
-    }
+  for (struct tray_menu *m = tray->menu; m != NULL && m->text != NULL; m++) {
     GtkWidget *item = gtk_menu_item_new_with_label(m->text);
     gtk_widget_show(item);
     gtk_menu_shell_append(GTK_MENU_SHELL(gtk_menu), item);
@@ -75,6 +72,84 @@ static void tray_exit() {
 }
 
 #elif defined(TRAY_APPKIT)
+
+#import <Cocoa/Cocoa.h>
+
+static NSAutoreleasePool *pool;
+static NSStatusBar *statusBar;
+static id statusItem;
+static id statusBarButton;
+
+@interface Tray : NSObject<NSApplicationDelegate>
+- (void) menuCallback: (id) sender;
+@end
+@implementation Tray
+- (void) menuCallback: (id) sender {
+  struct tray_menu *m = (struct tray_menu *)
+   [[sender representedObject] pointerValue];
+  m->cb(m);
+}
+@end
+
+static int tray_init(struct tray *tray) {
+  pool = [NSAutoreleasePool new];
+  [NSApplication sharedApplication];
+
+  Tray *trayDelegate = [Tray new];
+  [NSApp setDelegate: trayDelegate];
+
+  statusBar = [NSStatusBar systemStatusBar];
+  statusItem = [statusBar statusItemWithLength:NSVariableStatusItemLength];
+  [statusItem retain];
+  [statusItem setHighlightMode:YES];
+  statusBarButton = [statusItem button];
+
+  tray_update(tray);
+  [NSApp activateIgnoringOtherApps:YES];
+  return -1;
+}
+
+static int tray_loop(int blocking) {
+  NSEvent *event;
+  NSDate *until = (blocking ? [NSDate distantFuture] : [NSDate distantPast]);
+  event = [NSApp nextEventMatchingMask:NSAnyEventMask
+    untilDate:until
+    inMode:NSDefaultRunLoopMode
+    dequeue:YES];
+  if (event) {
+    [NSApp sendEvent:event];
+  }
+  return 0;
+}
+
+static void tray_update(struct tray *tray) {
+  [statusBarButton setImage:[NSImage imageNamed:@"icon.png"]];
+
+  NSMenu *menu = [NSMenu new];
+  [menu autorelease];
+  [menu setAutoenablesItems:NO];
+  for (struct tray_menu *m = tray->menu; m != NULL && m->text != NULL; m++) {
+    NSMenuItem *menuItem = [NSMenuItem alloc];
+    [menuItem autorelease];
+    [menuItem
+      initWithTitle: [NSString stringWithUTF8String: m->text]
+      action:@selector(menuCallback:)
+      keyEquivalent:@""];
+    [menuItem setEnabled:YES];
+    [menuItem setRepresentedObject: [NSValue valueWithPointer:m]];
+
+    [menu addItem:menuItem];
+
+    //[menu addItem:[NSMenuItem separatorItem]];
+  }
+
+  [statusItem setMenu:menu];
+}
+
+static void tray_exit() {
+  [NSApp terminate:NSApp];
+}
+
 #elif defined(TRAY_WINAPI)
 #else
 #endif

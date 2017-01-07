@@ -5,6 +5,7 @@
 static struct tray tray;
 
 static void hello_cb(struct tray_menu *item) {
+	printf("hello cb\n");
 	if (strcmp(tray.icon, "indicator-messages") == 0) {
 		tray.icon = "indicator-messages-new";
 	} else {
@@ -14,6 +15,7 @@ static void hello_cb(struct tray_menu *item) {
 }
 
 static void quit_cb(struct tray_menu *item) {
+	printf("quit cb\n");
 	tray_exit();
 }
 
@@ -28,6 +30,8 @@ static struct tray tray = {
 
 int main(int argc, char *argv[]) {
 	tray_init(&tray);
-	while (tray_loop(1) == 0);
+	while (tray_loop(1) == 0) {
+		printf("iteration\n");
+	}
 	return 0;
 }

@@ -8,8 +8,8 @@ else
 	TRAY_LDFLAGS := $(shell pkg-config --libs appindicator3-0.1)
 endif
 ifeq ($(UNAME_S),Darwin)
-	TRAY_CFLAGS := -DTRAY_COCOA=1 -x objective-c -framework Cocoa $< -o $@
-	TRAY_LDFLAGS :=
+	TRAY_CFLAGS := -DTRAY_APPKIT=1 -x objective-c
+	TRAY_LDFLAGS := -framework Cocoa
 endif
 endif
 
