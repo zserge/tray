@@ -146,6 +146,123 @@ static void tray_update(struct tray *tray) {
 static void tray_exit() { [NSApp terminate:NSApp]; }
 
 #elif defined(TRAY_WINAPI)
+#include <windows.h>
+#include <shellapi.h>
+
+#define WM_TRAY_CALLBACK_MESSAGE (WM_USER + 1)
+#define WC_TRAY_CLASS_NAME "TRAY"
+#define ID_TRAY_FIRST 1000
+
+static WNDCLASSEX wc;
+static NOTIFYICONDATA nid;
+static HWND hwnd;
+static HMENU hmenu;
+
+static LRESULT CALLBACK _tray_wnd_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
+  switch (msg) {
+    case WM_CLOSE:
+      DestroyWindow(hwnd);
+      return 0;
+    case WM_DESTROY:
+      PostQuitMessage(0);
+      return 0;
+    case WM_TRAY_CALLBACK_MESSAGE:
+      if (lparam == WM_LBUTTONUP || lparam == WM_RBUTTONUP) {
+        POINT p;
+        GetCursorPos(&p);
+        WORD cmd = TrackPopupMenu(hmenu,
+            TPM_LEFTALIGN | TPM_RIGHTBUTTON | TPM_RETURNCMD | TPM_NONOTIFY,
+            p.x, p.y, 0, hwnd, NULL);
+        SendMessage(hwnd, WM_COMMAND, cmd, 0);
+        return 0;
+      }
+      break;
+    case WM_COMMAND:
+      if (wparam >= ID_TRAY_FIRST) {
+        MENUITEMINFO item = {
+          .cbSize = sizeof(MENUITEMINFO),
+          .fMask = MIIM_ID | MIIM_DATA,
+        };
+        if (GetMenuItemInfo(hmenu, wparam, FALSE, &item)) {
+          struct tray_menu *menu = (struct tray_menu *) item.dwItemData;
+          menu->cb(menu->context);
+        }
+        return 0;
+      }
+      break;
+  }
+  return DefWindowProc(hwnd, msg, wparam, lparam);
+}
+
+static int tray_init(struct tray *tray) {
+  memset(&wc, 0, sizeof(wc));
+  wc.cbSize        = sizeof(WNDCLASSEX);
+  wc.lpfnWndProc   = _tray_wnd_proc;
+  wc.hInstance     = GetModuleHandle(NULL);
+  wc.lpszClassName = WC_TRAY_CLASS_NAME;
+  if (!RegisterClassEx(&wc)) {
+    return -1;
+  }
+
+  hwnd = CreateWindowEx(0, WC_TRAY_CLASS_NAME, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+  if (hwnd == NULL) {
+    return -1;
+  }
+  UpdateWindow(hwnd);
+
+  memset(&nid, 0, sizeof(nid));
+  nid.cbSize           = sizeof(NOTIFYICONDATA);
+  nid.hWnd             = hwnd;
+  nid.uID              = 0;
+  nid.uFlags           = NIF_ICON | NIF_MESSAGE;
+  nid.uCallbackMessage = WM_TRAY_CALLBACK_MESSAGE;
+  Shell_NotifyIcon(NIM_ADD, &nid);
+
+  tray_update(tray);
+}
+
+static int tray_loop(int blocking) {
+  MSG msg;
+  if (GetMessage(&msg, NULL, 0, 0)) {
+    TranslateMessage(&msg);
+    DispatchMessage(&msg);
+    return 0;
+  }
+  return -1;
+}
+
+static void tray_update(struct tray *tray) {
+  int i = 0;
+  hmenu = CreatePopupMenu();
+  for (struct tray_menu *m = tray->menu; m != NULL && m->text != NULL; m++) {
+    MENUITEMINFO *item = (MENUITEMINFO *) malloc(sizeof(MENUITEMINFO));
+    item->cbSize = sizeof(MENUITEMINFO);
+    item->fMask = MIIM_ID | MIIM_TYPE | MIIM_STATE | MIIM_DATA;
+    item->fType = 0;
+    item->fState = 0;
+    item->wID = i + ID_TRAY_FIRST;
+    item->dwTypeData = m->text;
+    item->dwItemData = (ULONG_PTR) m;
+
+    InsertMenuItem(hmenu, i, TRUE, item);
+    i++;
+  }
+  SendMessage(hwnd, WM_INITMENUPOPUP, (WPARAM)hmenu, 0);
+  ExtractIconEx(tray->icon, 0, NULL, &(nid.hIcon), 1);
+  Shell_NotifyIcon(NIM_MODIFY, &nid);
+}
+
+static void tray_exit() {
+  Shell_NotifyIcon(NIM_DELETE, &nid);
+  if (nid.hIcon != 0) {
+    DestroyIcon(nid.hIcon);
+  }
+  if (hmenu != 0) {
+    DestroyMenu(hmenu);
+  }
+  PostQuitMessage(0);
+  UnregisterClass(WC_TRAY_CLASS_NAME, GetModuleHandle(NULL));
+}
 #else
 #endif
 

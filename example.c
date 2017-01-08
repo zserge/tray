@@ -1,4 +1,5 @@
 #include <string.h>
+#include <stdio.h>
 
 #include "tray.h"
 
@@ -20,14 +21,23 @@ static void quit_cb(struct tray_menu *item) {
 }
 
 static struct tray tray = {
-    .icon = "indicator-messages-new",
     .menu = (struct tray_menu[]){{NULL, "Hello", 0, hello_cb, NULL},
                                  {NULL, "Quit", 0, quit_cb, NULL},
                                  {NULL, NULL, 0, NULL, NULL}},
 };
 
 int main(int argc, char *argv[]) {
-  tray_init(&tray);
+#if TRAY_APPINDICATOR
+  tray.icon = "indicator-messages-new";
+#elif TRAY_COCOA
+  tray.icon = "icon.png";
+#elif TRAY_WINAPI
+  tray.icon = "icon.ico";
+#endif
+  if (tray_init(&tray) < 0) {
+    printf("failed to create tray\n");
+    return 1;
+  }
   while (tray_loop(1) == 0) {
     printf("iteration\n");
   }

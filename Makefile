@@ -1,5 +1,5 @@
 ifeq ($(OS),Windows_NT)
-	TRAY_CFLAGS :=
+	TRAY_CFLAGS := -DTRAY_WINAPI=1
 	TRAY_LDFLAGS :=
 else
 	UNAME_S := $(shell uname -s)
@@ -18,7 +18,6 @@ CFLAGS := -g -Wall $(TRAY_CFLAGS)
 LDFLAGS := -g $(TRAY_LDFLAGS)
 
 all: example
-
 example: example.o
 	$(CC) $^ $(LDFLAGS) -o $@
 	
