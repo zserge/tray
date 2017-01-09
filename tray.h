@@ -125,7 +125,8 @@ static int tray_loop(int blocking) {
 }
 
 static void tray_update(struct tray *tray) {
-  [statusBarButton setImage:[NSImage imageNamed:@"icon.png"]];
+  [statusBarButton
+      setImage:[NSImage imageNamed:[NSString stringWithUTF8String:tray->icon]]];
 
   NSMenu *menu = [NSMenu new];
   [menu autorelease];
@@ -139,7 +140,8 @@ static void tray_update(struct tray *tray) {
       [menuItem initWithTitle:[NSString stringWithUTF8String:m->text]
                        action:@selector(menuCallback:)
                 keyEquivalent:@""];
-      [menuItem setEnabled:YES];
+      [menuItem setEnabled:(m->disabled ? NO : YES)];
+      [menuItem setState:(m->checked ? NSOnState : NSOffState)];
       [menuItem setRepresentedObject:[NSValue valueWithPointer:m]];
 
       [menu addItem:menuItem];
