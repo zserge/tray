@@ -10,9 +10,9 @@ struct tray {
 };
 
 struct tray_menu {
-  char *icon;
-  char *text; /* label */
-  int flags;
+  char *text;
+  int disabled;
+  int checked;
 
   void (*cb)(struct tray_menu *);
   void *context;
@@ -52,12 +52,15 @@ static int tray_loop(int blocking) {
 }
 
 static void tray_update(struct tray *tray) {
-  struct tray_menu *m;
-
   app_indicator_set_icon(indicator, tray->icon);
   GtkMenuShell *gtk_menu = (GtkMenuShell *)gtk_menu_new();
   for (struct tray_menu *m = tray->menu; m != NULL && m->text != NULL; m++) {
-    GtkWidget *item = gtk_menu_item_new_with_label(m->text);
+    GtkWidget *item;
+    if (strcmp(m->text, "-") == 0) {
+      item = gtk_separator_menu_item_new();
+    } else {
+      item = gtk_menu_item_new_with_label(m->text);
+    }
     gtk_widget_show(item);
     gtk_menu_shell_append(GTK_MENU_SHELL(gtk_menu), item);
     if (m->cb != NULL) {
@@ -127,17 +130,19 @@ static void tray_update(struct tray *tray) {
   [menu autorelease];
   [menu setAutoenablesItems:NO];
   for (struct tray_menu *m = tray->menu; m != NULL && m->text != NULL; m++) {
-    NSMenuItem *menuItem = [NSMenuItem alloc];
-    [menuItem autorelease];
-    [menuItem initWithTitle:[NSString stringWithUTF8String:m->text]
-                     action:@selector(menuCallback:)
-              keyEquivalent:@""];
-    [menuItem setEnabled:YES];
-    [menuItem setRepresentedObject:[NSValue valueWithPointer:m]];
+    if (strcmp(m->text, "-") == 0) {
+      [menu addItem:[NSMenuItem separatorItem]];
+    } else {
+      NSMenuItem *menuItem = [NSMenuItem alloc];
+      [menuItem autorelease];
+      [menuItem initWithTitle:[NSString stringWithUTF8String:m->text]
+                       action:@selector(menuCallback:)
+                keyEquivalent:@""];
+      [menuItem setEnabled:YES];
+      [menuItem setRepresentedObject:[NSValue valueWithPointer:m]];
 
-    [menu addItem:menuItem];
-
-    //[menu addItem:[NSMenuItem separatorItem]];
+      [menu addItem:menuItem];
+    }
   }
 
   [statusItem setMenu:menu];
@@ -146,8 +151,9 @@ static void tray_update(struct tray *tray) {
 static void tray_exit() { [NSApp terminate:NSApp]; }
 
 #elif defined(TRAY_WINAPI)
-#include <shellapi.h>
 #include <windows.h>
+
+#include <shellapi.h>
 
 #define WM_TRAY_CALLBACK_MESSAGE (WM_USER + 1)
 #define WC_TRAY_CLASS_NAME "TRAY"
@@ -234,18 +240,22 @@ static int tray_loop(int blocking) {
 static void tray_update(struct tray *tray) {
   int i = 0;
   hmenu = CreatePopupMenu();
-  for (struct tray_menu *m = tray->menu; m != NULL && m->text != NULL; m++) {
-    MENUITEMINFO *item = (MENUITEMINFO *)malloc(sizeof(MENUITEMINFO));
-    item->cbSize = sizeof(MENUITEMINFO);
-    item->fMask = MIIM_ID | MIIM_TYPE | MIIM_STATE | MIIM_DATA;
-    item->fType = 0;
-    item->fState = 0;
-    item->wID = i + ID_TRAY_FIRST;
-    item->dwTypeData = m->text;
-    item->dwItemData = (ULONG_PTR)m;
+  for (struct tray_menu *m = tray->menu; m != NULL && m->text != NULL;
+       m++, i++) {
+    if (strcmp(m->text, "-") == 0) {
+      InsertMenu(hmenu, i, MF_SEPARATOR, TRUE, "");
+    } else {
+      MENUITEMINFO *item = (MENUITEMINFO *)malloc(sizeof(MENUITEMINFO));
+      item->cbSize = sizeof(MENUITEMINFO);
+      item->fMask = MIIM_ID | MIIM_TYPE | MIIM_STATE | MIIM_DATA;
+      item->fType = 0;
+      item->fState = 0;
+      item->wID = i + ID_TRAY_FIRST;
+      item->dwTypeData = m->text;
+      item->dwItemData = (ULONG_PTR)m;
 
-    InsertMenuItem(hmenu, i, TRUE, item);
-    i++;
+      InsertMenuItem(hmenu, i, TRUE, item);
+    }
   }
   SendMessage(hwnd, WM_INITMENUPOPUP, (WPARAM)hmenu, 0);
   ExtractIconEx(tray->icon, 0, NULL, &(nid.hIcon), 1);

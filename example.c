@@ -5,6 +5,12 @@
 
 static struct tray tray;
 
+static void toggle_cb(struct tray_menu *item) {
+  printf("toggle cb\n");
+  item->checked = !item->checked;
+  tray_update(&tray);
+}
+
 static void hello_cb(struct tray_menu *item) {
   printf("hello cb\n");
   if (strcmp(tray.icon, "indicator-messages") == 0) {
@@ -21,9 +27,12 @@ static void quit_cb(struct tray_menu *item) {
 }
 
 static struct tray tray = {
-    .menu = (struct tray_menu[]){{NULL, "Hello", 0, hello_cb, NULL},
-                                 {NULL, "Quit", 0, quit_cb, NULL},
-                                 {NULL, NULL, 0, NULL, NULL}},
+    .menu = (struct tray_menu[]){{"Hello", 0, 0, hello_cb, NULL},
+                                 {"Checked", 0, 1, toggle_cb, NULL},
+                                 {"Disabled", 1, 0, NULL, NULL},
+                                 {"-", 0, 0, NULL, NULL},
+                                 {"Quit", 0, 0, quit_cb, NULL},
+                                 {NULL, 0, 0, NULL, NULL}},
 };
 
 int main(int argc, char *argv[]) {
