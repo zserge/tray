@@ -5,7 +5,6 @@ struct tray_menu;
 
 struct tray {
   char *icon;
-  char *tooltip;
   struct tray_menu *menu;
 };
 
