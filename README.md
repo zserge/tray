@@ -1,7 +1,7 @@
 Tray
 ----
 
-Cross-platform, super tiny C99 implementation of a system tray icon with a popup menu.
+Cross-platform, single header, super tiny C99 implementation of a system tray icon with a popup menu.
 
 Works well on:
 
