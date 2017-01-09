@@ -230,6 +230,7 @@ static int tray_init(struct tray *tray) {
   Shell_NotifyIcon(NIM_ADD, &nid);
 
   tray_update(tray);
+  return 0;
 }
 
 static int tray_loop(int blocking) {
@@ -296,6 +297,10 @@ static void tray_exit() {
   UnregisterClass(WC_TRAY_CLASS_NAME, GetModuleHandle(NULL));
 }
 #else
+static int tray_init(struct tray *tray) { return -1; }
+static int tray_loop(int blocking) { return -1; }
+static void tray_update(struct tray *tray) {}
+static void tray_exit();
 #endif
 
 #endif /* TRAY_H */
