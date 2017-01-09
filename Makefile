@@ -10,7 +10,7 @@ else ifeq ($(shell uname -s),Darwin)
 endif
 
 
-CFLAGS := -g -Wall $(TRAY_CFLAGS)
+CFLAGS := -g -Wall $(TRAY_CFLAGS) -Wall -Wextra
 LDFLAGS := -g $(TRAY_LDFLAGS)
 
 all: example
