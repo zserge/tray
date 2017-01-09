@@ -3,6 +3,17 @@
 
 #include "tray.h"
 
+#if TRAY_APPINDICATOR
+#define TRAY_ICON1 "indicator-messages"
+#define TRAY_ICON2 "indicator-messages-new"
+#elif TRAY_APPKIT
+#define TRAY_ICON1 "icon.png"
+#define TRAY_ICON2 "icon.png"
+#elif TRAY_WINAPI
+#define TRAY_ICON1 "icon.ico"
+#define TRAY_ICON2 "icon.ico"
+#endif
+
 static struct tray tray;
 
 static void toggle_cb(struct tray_menu *item) {
@@ -13,10 +24,10 @@ static void toggle_cb(struct tray_menu *item) {
 
 static void hello_cb(struct tray_menu *item) {
   printf("hello cb\n");
-  if (strcmp(tray.icon, "indicator-messages") == 0) {
-    tray.icon = "indicator-messages-new";
+  if (strcmp(tray.icon, TRAY_ICON1) == 0) {
+    tray.icon = TRAY_ICON2;
   } else {
-    tray.icon = "indicator-messages";
+    tray.icon = TRAY_ICON1;
   }
   tray_update(&tray);
 }
@@ -27,6 +38,7 @@ static void quit_cb(struct tray_menu *item) {
 }
 
 static struct tray tray = {
+    .icon = TRAY_ICON1,
     .menu = (struct tray_menu[]){{"Hello", 0, 0, hello_cb, NULL},
                                  {"Checked", 0, 1, toggle_cb, NULL},
                                  {"Disabled", 1, 0, NULL, NULL},
@@ -36,13 +48,6 @@ static struct tray tray = {
 };
 
 int main(int argc, char *argv[]) {
-#if TRAY_APPINDICATOR
-  tray.icon = "indicator-messages-new";
-#elif TRAY_COCOA
-  tray.icon = "icon.png";
-#elif TRAY_WINAPI
-  tray.icon = "icon.ico";
-#endif
   if (tray_init(&tray) < 0) {
     printf("failed to create tray\n");
     return 1;

@@ -108,7 +108,7 @@ static int tray_init(struct tray *tray) {
 
   tray_update(tray);
   [NSApp activateIgnoringOtherApps:YES];
-  return -1;
+  return 0;
 }
 
 static int tray_loop(int blocking) {
