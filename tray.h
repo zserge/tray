@@ -236,12 +236,17 @@ static int tray_init(struct tray *tray) {
 
 static int tray_loop(int blocking) {
   MSG msg;
-  if (GetMessage(&msg, NULL, 0, 0)) {
-    TranslateMessage(&msg);
-    DispatchMessage(&msg);
-    return 0;
+  if (blocking) {
+    GetMessage(&msg, NULL, 0, 0);
+  } else {
+    PeekMessage(&msg, NULL, 0, 0, PM_REMOVE);
   }
-  return -1;
+  if (msg.message == WM_QUIT) {
+    return -1;
+  }
+  TranslateMessage(&msg);
+  DispatchMessage(&msg);
+  return 0;
 }
 
 static void tray_update(struct tray *tray) {
