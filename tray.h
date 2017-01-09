@@ -55,15 +55,28 @@ static void tray_update(struct tray *tray) {
   GtkMenuShell *menu = (GtkMenuShell *)gtk_menu_new();
   for (struct tray_menu *m = tray->menu; m != NULL && m->text != NULL; m++) {
     GtkWidget *item;
-    if (strcmp(m->text, "-") == 0) {
-      item = gtk_separator_menu_item_new();
-    } else {
-      item = gtk_check_menu_item_new_with_label(m->text);
-      gtk_widget_set_sensitive(item, !m->disabled);
-      gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(item), !!m->checked);
+    if (strcmp(m->text, "+") == 0) {
+      GtkWidget *submenu1 = gtk_menu_new();
+      item = gtk_menu_item_new_with_label("SubMenu1");
+      gtk_menu_item_set_submenu(GTK_MENU_ITEM(item), submenu1); 
+      GtkWidget* submenu1_option;
+      submenu1_option = gtk_menu_item_new_with_label("Submenu option!");
+      gtk_menu_shell_append(GTK_MENU_SHELL(submenu1), submenu1_option);
+    } 
+    else {
+      if (strcmp(m->text, "-") == 0) {
+        item = gtk_separator_menu_item_new(); 
+      } else {
+        item = gtk_check_menu_item_new_with_label(m->text);
+        gtk_widget_set_sensitive(item, !m->disabled);
+        gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(item), !!m->checked);
+      }
     }
     gtk_widget_show(item);
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
+
+
+
     if (m->cb != NULL) {
       g_signal_connect(item, "activate", G_CALLBACK(_tray_menu_cb), m);
     }

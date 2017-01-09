@@ -45,6 +45,7 @@ static struct tray tray = {
                                  {"Checked", 0, 1, toggle_cb, NULL},
                                  {"Disabled", 1, 0, NULL, NULL},
                                  {"-", 0, 0, NULL, NULL},
+                                 {"+", 0, 0, NULL, NULL},
                                  {"Quit", 0, 0, quit_cb, NULL},
                                  {NULL, 0, 0, NULL, NULL}},
 };
