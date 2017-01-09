@@ -23,6 +23,7 @@ static void toggle_cb(struct tray_menu *item) {
 }
 
 static void hello_cb(struct tray_menu *item) {
+  (void)item;
   printf("hello cb\n");
   if (strcmp(tray.icon, TRAY_ICON1) == 0) {
     tray.icon = TRAY_ICON2;
@@ -33,6 +34,7 @@ static void hello_cb(struct tray_menu *item) {
 }
 
 static void quit_cb(struct tray_menu *item) {
+  (void)item;
   printf("quit cb\n");
   tray_exit();
 }
@@ -47,7 +49,7 @@ static struct tray tray = {
                                  {NULL, 0, 0, NULL, NULL}},
 };
 
-int main(int argc, char *argv[]) {
+int main() {
   if (tray_init(&tray) < 0) {
     printf("failed to create tray\n");
     return 1;

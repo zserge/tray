@@ -30,6 +30,7 @@ static AppIndicator *indicator = NULL;
 static int loop_result = 0;
 
 static void _tray_menu_cb(GtkMenuItem *item, gpointer data) {
+  (void)item;
   struct tray_menu *m = (struct tray_menu *)data;
   m->cb(m);
 }
