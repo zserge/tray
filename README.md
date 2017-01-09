@@ -71,15 +71,15 @@ All functions are meant to be called from the UI thread only.
 
 ## Roadmap
 
-[x] Cross-platform tray icon
-[x] Cross-platform tray popup menu
-[x] Separators in the menu
-[x] Disabled/enabled menu items
-[x] Checked/unchecked menu items
-[ ] Nested menus
-[ ] Icons for menu items
-[ ] Rewrite ObjC code in C using ObjC Runtime (now ObjC code breaks many linters and static analyzers)
-[ ] Call GTK code using dlopen/dlsym (to make binaries run safely if Gtk libraries are not available)
+* [x] Cross-platform tray icon
+* [x] Cross-platform tray popup menu
+* [x] Separators in the menu
+* [x] Disabled/enabled menu items
+* [x] Checked/unchecked menu items
+* [ ] Nested menus
+* [ ] Icons for menu items
+* [ ] Rewrite ObjC code in C using ObjC Runtime (now ObjC code breaks many linters and static analyzers)
+* [ ] Call GTK code using dlopen/dlsym (to make binaries run safely if Gtk libraries are not available)
 
 ## License
 
