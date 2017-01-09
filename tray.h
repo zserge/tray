@@ -193,7 +193,7 @@ static LRESULT CALLBACK _tray_wnd_proc(HWND hwnd, UINT msg, WPARAM wparam,
       };
       if (GetMenuItemInfo(hmenu, wparam, FALSE, &item)) {
         struct tray_menu *menu = (struct tray_menu *)item.dwItemData;
-        menu->cb(menu->context);
+        menu->cb(menu);
       }
       return 0;
     }
@@ -252,6 +252,12 @@ static void tray_update(struct tray *tray) {
       item->fMask = MIIM_ID | MIIM_TYPE | MIIM_STATE | MIIM_DATA;
       item->fType = 0;
       item->fState = 0;
+      if (m->disabled) {
+        item->fState |= MFS_DISABLED;
+      }
+      if (m->checked) {
+        item->fState |= MFS_CHECKED;
+      }
       item->wID = i + ID_TRAY_FIRST;
       item->dwTypeData = m->text;
       item->dwItemData = (ULONG_PTR)m;
