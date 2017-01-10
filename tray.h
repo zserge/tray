@@ -70,9 +70,9 @@ static void tray_update(struct tray *tray) {
     GtkWidget *item;
     if (m->submenu != NULL) {  
 
-      GtkWidget *submenu = gtk_menu_new();
+      GtkMenuShell *submenu = (GtkMenuShell *)gtk_menu_new();
       item = gtk_menu_item_new_with_label(m->text);
-      gtk_menu_item_set_submenu(GTK_MENU_ITEM(item), submenu);
+      gtk_menu_item_set_submenu(GTK_MENU_ITEM(item), (GtkWidget *)submenu);
 
       for (struct tray_submenu *s_m = m->submenu; s_m != NULL && s_m->text != NULL; s_m++) {        
       
