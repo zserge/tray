@@ -36,12 +36,6 @@ static void _tray_menu_cb(GtkMenuItem *item, gpointer data) {
   m->cb(m);
 }
 
-// static void _tray_submenu_cb(GtkMenuItem *item, gpointer data) {
-//   (void)item;
-//   struct tray_submenu *s_m = (struct tray_submenu *)data;
-//   s_m->cb(s_m);
-// }
-
 static int tray_init(struct tray *tray) {
   if (gtk_init_check(0, NULL) == FALSE) {
     return -1;
