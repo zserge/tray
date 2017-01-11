@@ -10,12 +10,12 @@ struct tray {
 
 struct tray_menu {
   char *text;
-  // int disabled;
-  // int checked;
+  int disabled;
+  int checked;
   struct tray_menu *submenu;
 
-  // void (*cb)(struct tray_menu *);
-  // void *context;
+  void (*cb)(struct tray_menu *);
+  void *context;
 };
 
 static void tray_update(struct tray *tray);
@@ -30,11 +30,11 @@ static void tray_update(struct tray *tray);
 static AppIndicator *indicator = NULL;
 static int loop_result = 0;
 
-// static void _tray_menu_cb(GtkMenuItem *item, gpointer data) {
-//   (void)item;
-//   struct tray_menu *m = (struct tray_menu *)data;
-//   m->cb(m);
-// }
+static void _tray_menu_cb(GtkMenuItem *item, gpointer data) {
+  (void)item;
+  struct tray_menu *m = (struct tray_menu *)data;
+  m->cb(m);
+}
 
 // static void _tray_submenu_cb(GtkMenuItem *item, gpointer data) {
 //   (void)item;
@@ -58,15 +58,13 @@ static int tray_loop(int blocking) {
   return loop_result;
 }
 
+//recursive proc
 static void  submenu_update(struct tray_menu *m, 
-                      GtkWidget *_item, GtkMenuShell *_submenu) {  
-  
-  GtkMenuShell *submenu; //= (GtkMenuShell *)gtk_menu_new();
-  
+                      GtkWidget *_item, GtkMenuShell *_submenu) {
+  GtkMenuShell *submenu; 
   for (struct tray_menu *s_m = m->submenu; s_m!=NULL && s_m->text!=NULL; s_m++) {
     GtkWidget *item;
-    if (s_m->submenu != NULL) {
-       printf("GO TO REC SUB %s\n", s_m->text);
+    if (s_m->submenu != NULL) {      
        item = gtk_menu_item_new_with_label(s_m->text);
        submenu = (GtkMenuShell *)gtk_menu_new();
        gtk_menu_item_set_submenu(GTK_MENU_ITEM(item), (GtkWidget *)submenu);
@@ -74,15 +72,22 @@ static void  submenu_update(struct tray_menu *m,
        gtk_widget_show(item);
        gtk_menu_shell_append(GTK_MENU_SHELL(_submenu), item);
 
-    }
-    else{  
-      gtk_menu_item_set_submenu(GTK_MENU_ITEM(_item), (GtkWidget *)_submenu);      
-      item = gtk_menu_item_new_with_label(s_m->text);
-      
-      printf("--%s add to %s\n", gtk_menu_item_get_label((GtkMenuItem*)item), gtk_menu_item_get_label((GtkMenuItem*)_item));
-      
+    }else if (strcmp(s_m->text, "-") == 0) {
+      gtk_menu_item_set_submenu(GTK_MENU_ITEM(_item), (GtkWidget *)_submenu);
+      item = gtk_separator_menu_item_new();
       gtk_widget_show(item);
       gtk_menu_shell_append(GTK_MENU_SHELL(_submenu), item);
+    }
+    else{  
+      gtk_menu_item_set_submenu(GTK_MENU_ITEM(_item), (GtkWidget *)_submenu);
+      item = gtk_check_menu_item_new_with_label(s_m->text);
+      gtk_widget_set_sensitive(item, !s_m->disabled);
+      gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(item), !!s_m->checked);
+      gtk_widget_show(item);
+      gtk_menu_shell_append(GTK_MENU_SHELL(_submenu), item);
+      if (s_m->cb != NULL) {
+        g_signal_connect(item, "activate", G_CALLBACK(_tray_menu_cb), s_m);
+      }
     }
   }  
 }
@@ -91,63 +96,31 @@ static void tray_update(struct tray *tray) {
   GtkMenuShell *menu = (GtkMenuShell *)gtk_menu_new();
   for (struct tray_menu *m = tray->menu; m != NULL && m->text != NULL; m++) {
     GtkWidget *item;
-    if (m->submenu != NULL) {
-      printf("GO TO REC MAIN %s\n", m->text);
+    if (m->submenu != NULL) {      
       GtkMenuShell *submenu = (GtkMenuShell *)gtk_menu_new();
       item = gtk_menu_item_new_with_label(m->text);
       gtk_menu_item_set_submenu(GTK_MENU_ITEM(item), (GtkWidget *)submenu);
       submenu_update(m, item, submenu);
-    }
-    else {
-      item = gtk_menu_item_new_with_label(m->text);      
+    } else if (strcmp(m->text, "-") == 0) {
+      item = gtk_separator_menu_item_new();
+    } else {      
+      item = gtk_check_menu_item_new_with_label(m->text);
+      gtk_widget_set_sensitive(item, !m->disabled);
+      gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(item), !!m->checked);      
     }
 
     gtk_widget_show(item);    
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
+    if (m->cb != NULL) {
+      g_signal_connect(item, "activate", G_CALLBACK(_tray_menu_cb), m);
+    }
   }
   app_indicator_set_icon(indicator, tray->icon);
+  // GTK is all about reference counting, so previous menu should be destroyed
+  // here
   app_indicator_set_menu(indicator, GTK_MENU(menu));
 }
-// static void tray_update(struct tray *tray) {
-//   GtkMenuShell *menu = (GtkMenuShell *)gtk_menu_new();
-//   for (struct tray_menu *m = tray->menu; m != NULL && m->text != NULL; m++) {
-//     GtkWidget *item;
-//     if (m->submenu != NULL) {  
-//       GtkMenuShell *submenu = (GtkMenuShell *)gtk_menu_new();
-//       item = gtk_menu_item_new_with_label(m->text);
-//       gtk_menu_item_set_submenu(GTK_MENU_ITEM(item), (GtkWidget *)submenu);
 
-//       for (struct tray_submenu *s_m = m->submenu; s_m != NULL && s_m->text != NULL; s_m++) {        
-      
-//         GtkWidget* submenu_item;
-//         submenu_item = gtk_menu_item_new_with_label(s_m->text);
-//         gtk_widget_show(submenu_item);
-//         gtk_menu_shell_append(GTK_MENU_SHELL(submenu), submenu_item);   
-//         if (s_m->cb != NULL) {
-//           g_signal_connect(submenu_item, "activate", G_CALLBACK(_tray_submenu_cb), s_m);
-//         }      
-//       }  
-
-//     } 
-//     else if (strcmp(m->text, "-") == 0) {
-//       item = gtk_separator_menu_item_new();
-//     } else {
-//       item = gtk_check_menu_item_new_with_label(m->text);
-//       gtk_widget_set_sensitive(item, !m->disabled);
-//       gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(item), !!m->checked);
-//     }
-
-//     gtk_widget_show(item);
-//     gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
-//     if (m->cb != NULL) {
-//       g_signal_connect(item, "activate", G_CALLBACK(_tray_menu_cb), m);
-//     }
-//   }
-//   app_indicator_set_icon(indicator, tray->icon);
-//   // GTK is all about reference counting, so previous menu should be destroyed
-//   // here
-//   app_indicator_set_menu(indicator, GTK_MENU(menu));
-// }
 
 static void tray_exit() { loop_result = -1; }
 
