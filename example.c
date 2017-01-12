@@ -39,14 +39,42 @@ static void quit_cb(struct tray_menu *item) {
   tray_exit();
 }
 
+static void submenu_cb(struct tray_menu *item) {
+  (void)item;
+  printf("submenu cb!!!\n");
+  tray_update(&tray);
+}
+
+// Test tray init
 static struct tray tray = {
     .icon = TRAY_ICON1,
-    .menu = (struct tray_menu[]){{"Hello", 0, 0, hello_cb, NULL},
-                                 {"Checked", 0, 1, toggle_cb, NULL},
-                                 {"Disabled", 1, 0, NULL, NULL},
-                                 {"-", 0, 0, NULL, NULL},
-                                 {"Quit", 0, 0, quit_cb, NULL},
-                                 {NULL, 0, 0, NULL, NULL}},
+    .menu = (struct tray_menu[]){
+        {"Hello", 0, 0, NULL, hello_cb, NULL},
+        {"Checked", 0, 1, NULL, toggle_cb, NULL},
+        {"Disabled", 1, 0, NULL, NULL, NULL},
+        {"-", 0, 0, NULL, NULL, NULL},
+        {"Quit", 0, 0, NULL, quit_cb, NULL},
+        {"SubMenu", 0, 0,
+         (struct tray_menu[]){
+             {"FIRST", 0, 1, NULL, submenu_cb, NULL},
+             {"SECOND", 0, 0,
+              (struct tray_menu[]){
+                  {"THIRD", 0, 0,
+                   (struct tray_menu[]){{"7", 0, 0, NULL, submenu_cb, NULL},
+                                        {"-", 0, 0, NULL, NULL, NULL},
+                                        {"8", 0, 0, NULL, submenu_cb, NULL},
+                                        {NULL, 0, 0, NULL, NULL, NULL}},
+                   NULL, NULL},
+                  {"FOUR", 0, 0,
+                   (struct tray_menu[]){{"5", 0, 0, NULL, submenu_cb, NULL},
+                                        {"6", 0, 0, NULL, submenu_cb, NULL},
+                                        {NULL, 0, 0, NULL, NULL, NULL}},
+                   NULL, NULL},
+                  {NULL, 0, 0, NULL, NULL, NULL}},
+              NULL, NULL},
+             {NULL, 0, 0, NULL, NULL, NULL}},
+         NULL, NULL},
+        {NULL, 0, 0, NULL, NULL, NULL}},
 };
 
 int main() {

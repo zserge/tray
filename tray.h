@@ -12,6 +12,7 @@ struct tray_menu {
   char *text;
   int disabled;
   int checked;
+  struct tray_menu *submenu;
 
   void (*cb)(struct tray_menu *);
   void *context;
@@ -51,17 +52,56 @@ static int tray_loop(int blocking) {
   return loop_result;
 }
 
+// recursive proc
+static void submenu_update(struct tray_menu *m, GtkWidget *_item,
+                           GtkMenuShell *_submenu) {
+  GtkMenuShell *submenu;
+  for (struct tray_menu *s_m = m->submenu; s_m != NULL && s_m->text != NULL;
+       s_m++) {
+    GtkWidget *item;
+    if (s_m->submenu != NULL) {
+      item = gtk_menu_item_new_with_label(s_m->text);
+      submenu = (GtkMenuShell *)gtk_menu_new();
+      gtk_menu_item_set_submenu(GTK_MENU_ITEM(item), (GtkWidget *)submenu);
+      submenu_update(s_m, item, submenu);
+      gtk_widget_show(item);
+      gtk_menu_shell_append(GTK_MENU_SHELL(_submenu), item);
+    } else if (strcmp(s_m->text, "-") == 0) {
+      gtk_menu_item_set_submenu(GTK_MENU_ITEM(_item), (GtkWidget *)_submenu);
+      item = gtk_separator_menu_item_new();
+      gtk_widget_show(item);
+      gtk_menu_shell_append(GTK_MENU_SHELL(_submenu), item);
+    } else {
+      gtk_menu_item_set_submenu(GTK_MENU_ITEM(_item), (GtkWidget *)_submenu);
+      item = gtk_check_menu_item_new_with_label(s_m->text);
+      gtk_widget_set_sensitive(item, !s_m->disabled);
+      gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(item), !!s_m->checked);
+      gtk_widget_show(item);
+      gtk_menu_shell_append(GTK_MENU_SHELL(_submenu), item);
+      if (s_m->cb != NULL) {
+        g_signal_connect(item, "activate", G_CALLBACK(_tray_menu_cb), s_m);
+      }
+    }
+  }
+}
+
 static void tray_update(struct tray *tray) {
   GtkMenuShell *menu = (GtkMenuShell *)gtk_menu_new();
   for (struct tray_menu *m = tray->menu; m != NULL && m->text != NULL; m++) {
     GtkWidget *item;
-    if (strcmp(m->text, "-") == 0) {
+    if (m->submenu != NULL) {
+      GtkMenuShell *submenu = (GtkMenuShell *)gtk_menu_new();
+      item = gtk_menu_item_new_with_label(m->text);
+      gtk_menu_item_set_submenu(GTK_MENU_ITEM(item), (GtkWidget *)submenu);
+      submenu_update(m, item, submenu);
+    } else if (strcmp(m->text, "-") == 0) {
       item = gtk_separator_menu_item_new();
     } else {
       item = gtk_check_menu_item_new_with_label(m->text);
       gtk_widget_set_sensitive(item, !m->disabled);
       gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(item), !!m->checked);
     }
+
     gtk_widget_show(item);
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), item);
     if (m->cb != NULL) {
@@ -170,8 +210,8 @@ static NOTIFYICONDATA nid;
 static HWND hwnd;
 static HMENU hmenu = NULL;
 
-static LRESULT CALLBACK _tray_wnd_proc(HWND hwnd, UINT msg, WPARAM wparam,
-                                       LPARAM lparam) {
+static LRESULT CALLBACK
+    _tray_wnd_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   switch (msg) {
   case WM_CLOSE:
     DestroyWindow(hwnd);
