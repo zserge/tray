@@ -41,7 +41,7 @@ static void quit_cb(struct tray_menu *item) {
 
 static void submenu_cb(struct tray_menu *item) {
   (void)item;
-  printf("submenu cb!!!\n");
+  printf("submenu: clicked on %s\n", item->text);
   tray_update(&tray);
 }
 

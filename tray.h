@@ -209,7 +209,9 @@ static LRESULT CALLBACK _tray_wnd_proc(HWND hwnd, UINT msg, WPARAM wparam,
       };
       if (GetMenuItemInfo(hmenu, wparam, FALSE, &item)) {
         struct tray_menu *menu = (struct tray_menu *)item.dwItemData;
-        menu->cb(menu);
+        if (menu != NULL && menu->cb != NULL) {
+          menu->cb(menu);
+        }
       }
       return 0;
     }
@@ -218,11 +220,11 @@ static LRESULT CALLBACK _tray_wnd_proc(HWND hwnd, UINT msg, WPARAM wparam,
   return DefWindowProc(hwnd, msg, wparam, lparam);
 }
 
-static HMENU _tray_menu(struct tray_menu *m) {
+static HMENU _tray_menu(struct tray_menu *m, UINT *id) {
   HMENU hmenu = CreatePopupMenu();
-  for (int i = 0; m != NULL && m->text != NULL; m++, i++) {
+  for (; m != NULL && m->text != NULL; m++, (*id)++) {
     if (strcmp(m->text, "-") == 0) {
-      InsertMenu(hmenu, i, MF_SEPARATOR, TRUE, "");
+      InsertMenu(hmenu, *id, MF_SEPARATOR, TRUE, "");
     } else {
       MENUITEMINFO item;
       memset(&item, 0, sizeof(item));
@@ -232,7 +234,7 @@ static HMENU _tray_menu(struct tray_menu *m) {
       item.fState = 0;
       if (m->submenu != NULL) {
         item.fMask = item.fMask | MIIM_SUBMENU;
-        item.hSubMenu = _tray_menu(m->submenu);
+        item.hSubMenu = _tray_menu(m->submenu, id);
       }
       if (m->disabled) {
         item.fState |= MFS_DISABLED;
@@ -240,11 +242,11 @@ static HMENU _tray_menu(struct tray_menu *m) {
       if (m->checked) {
         item.fState |= MFS_CHECKED;
       }
-      item.wID = i + ID_TRAY_FIRST;
+      item.wID = *id;
       item.dwTypeData = m->text;
       item.dwItemData = (ULONG_PTR)m;
 
-      InsertMenuItem(hmenu, i, TRUE, &item);
+      InsertMenuItem(hmenu, *id, TRUE, &item);
     }
   }
   return hmenu;
@@ -295,7 +297,8 @@ static int tray_loop(int blocking) {
 
 static void tray_update(struct tray *tray) {
   HMENU prevmenu = hmenu;
-  hmenu = _tray_menu(tray->menu);
+  UINT id = ID_TRAY_FIRST;
+  hmenu = _tray_menu(tray->menu, &id);
   SendMessage(hwnd, WM_INITMENUPOPUP, (WPARAM)hmenu, 0);
   HICON icon;
   ExtractIconEx(tray->icon, 0, NULL, &icon, 1);
