@@ -50,28 +50,35 @@ static struct tray tray = {
     .icon = TRAY_ICON1,
     .menu =
         (struct tray_menu[]){
-            {"Hello", 0, 0, hello_cb, NULL, NULL},
-            {"Checked", 0, 1, toggle_cb, NULL, NULL},
-            {"Disabled", 1, 0, NULL, NULL, NULL},
-            {"-", 0, 0, NULL, NULL, NULL},
-            {"Quit", 0, 0, quit_cb, NULL, NULL},
-            {"SubMenu", 0, 0, NULL, NULL,
-             (struct tray_menu[]){
-                 {"FIRST", 0, 1, submenu_cb, NULL, NULL},
-                 {"SECOND", 0, 0, NULL, NULL,
-                  (struct tray_menu[]){
-                      {"THIRD", 0, 0, NULL, NULL,
-                       (struct tray_menu[]){{"7", 0, 0, submenu_cb, NULL, NULL},
-                                            {"-", 0, 0, NULL, NULL, NULL},
-                                            {"8", 0, 0, submenu_cb, NULL, NULL},
-                                            {NULL, 0, 0, NULL, NULL, NULL}}},
-                      {"FOUR", 0, 0, NULL, NULL,
-                       (struct tray_menu[]){{"5", 0, 0, submenu_cb, NULL, NULL},
-                                            {"6", 0, 0, submenu_cb, NULL, NULL},
-                                            {NULL, 0, 0, NULL, NULL, NULL}}},
-                      {NULL, 0, 0, NULL, NULL, NULL}}},
-                 {NULL, 0, 0, NULL, NULL, NULL}}},
-            {NULL, 0, 0, NULL, NULL, NULL}},
+            {.text = "Hello", .cb = hello_cb},
+            {.text = "Checked", .checked = 1, .cb = toggle_cb},
+            {.text = "Disabled", .disabled = 1},
+            {.text = "-"},
+            {.text = "SubMenu",
+             .submenu =
+                 (struct tray_menu[]){
+                     {.text = "FIRST", .checked = 1, .cb = submenu_cb},
+                     {.text = "SECOND",
+                      .submenu =
+                          (struct tray_menu[]){
+                              {.text = "THIRD",
+                               .submenu =
+                                   (struct tray_menu[]){
+                                       {.text = "7", .cb = submenu_cb},
+                                       {.text = "-"},
+                                       {.text = "8", .cb = submenu_cb},
+                                       {.text = NULL}}},
+                              {.text = "FOUR",
+                               .submenu =
+                                   (struct tray_menu[]){
+                                       {.text = "5", .cb = submenu_cb},
+                                       {.text = "6", .cb = submenu_cb},
+                                       {.text = NULL}}},
+                              {.text = NULL}}},
+                     {.text = NULL}}},
+            {.text = "-"},
+            {.text = "Quit", .cb = quit_cb},
+            {.text = NULL}},
 };
 
 int main() {
