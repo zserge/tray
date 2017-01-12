@@ -12,10 +12,11 @@ struct tray_menu {
   char *text;
   int disabled;
   int checked;
-  struct tray_menu *submenu;
 
   void (*cb)(struct tray_menu *);
   void *context;
+
+  struct tray_menu *submenu;
 };
 
 static void tray_update(struct tray *tray);
@@ -45,7 +46,8 @@ static GtkMenuShell *_tray_menu(struct tray_menu *m) {
     } else {
       if (m->submenu != NULL) {
         item = gtk_menu_item_new_with_label(m->text);
-        gtk_menu_item_set_submenu(GTK_MENU_ITEM(item), GTK_WIDGET(_tray_menu(m->submenu)));
+        gtk_menu_item_set_submenu(GTK_MENU_ITEM(item),
+                                  GTK_WIDGET(_tray_menu(m->submenu)));
       } else {
         item = gtk_check_menu_item_new_with_label(m->text);
         gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(item), !!m->checked);
@@ -180,8 +182,8 @@ static NOTIFYICONDATA nid;
 static HWND hwnd;
 static HMENU hmenu = NULL;
 
-static LRESULT CALLBACK
-    _tray_wnd_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
+static LRESULT CALLBACK _tray_wnd_proc(HWND hwnd, UINT msg, WPARAM wparam,
+                                       LPARAM lparam) {
   switch (msg) {
   case WM_CLOSE:
     DestroyWindow(hwnd);
