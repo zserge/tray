@@ -104,9 +104,38 @@ static id statusBarButton;
 - (void)menuCallback:(id)sender {
   struct tray_menu *m =
       (struct tray_menu *)[[sender representedObject] pointerValue];
-  m->cb(m);
+  if (m != NULL && m->cb != NULL) {
+    m->cb(m);
+  }
 }
 @end
+
+static NSMenu *_tray_menu(struct tray_menu *m) {
+  NSMenu *menu = [NSMenu new];
+  [menu autorelease];
+  [menu setAutoenablesItems:NO];
+  for (; m != NULL && m->text != NULL; m++) {
+    if (strcmp(m->text, "-") == 0) {
+      [menu addItem:[NSMenuItem separatorItem]];
+    } else {
+      NSMenuItem *menuItem = [NSMenuItem alloc];
+      [menuItem autorelease];
+      [menuItem initWithTitle:[NSString stringWithUTF8String:m->text]
+                       action:@selector(menuCallback:)
+                keyEquivalent:@""];
+      [menuItem setEnabled:(m->disabled ? NO : YES)];
+      [menuItem setState:(m->checked ? NSOnState : NSOffState)];
+      [menuItem setRepresentedObject:[NSValue valueWithPointer:m]];
+
+      [menu addItem:menuItem];
+
+      if (m->submenu != NULL) {
+        [menu setSubmenu:_tray_menu(m->submenu) forItem:menuItem];
+      }
+    }
+  }
+  return menu;
+}
 
 static int tray_init(struct tray *tray) {
   pool = [NSAutoreleasePool new];
@@ -143,27 +172,7 @@ static void tray_update(struct tray *tray) {
   [statusBarButton
       setImage:[NSImage imageNamed:[NSString stringWithUTF8String:tray->icon]]];
 
-  NSMenu *menu = [NSMenu new];
-  [menu autorelease];
-  [menu setAutoenablesItems:NO];
-  for (struct tray_menu *m = tray->menu; m != NULL && m->text != NULL; m++) {
-    if (strcmp(m->text, "-") == 0) {
-      [menu addItem:[NSMenuItem separatorItem]];
-    } else {
-      NSMenuItem *menuItem = [NSMenuItem alloc];
-      [menuItem autorelease];
-      [menuItem initWithTitle:[NSString stringWithUTF8String:m->text]
-                       action:@selector(menuCallback:)
-                keyEquivalent:@""];
-      [menuItem setEnabled:(m->disabled ? NO : YES)];
-      [menuItem setState:(m->checked ? NSOnState : NSOffState)];
-      [menuItem setRepresentedObject:[NSValue valueWithPointer:m]];
-
-      [menu addItem:menuItem];
-    }
-  }
-
-  [statusItem setMenu:menu];
+  [statusItem setMenu:_tray_menu(tray->menu)];
 }
 
 static void tray_exit() { [NSApp terminate:NSApp]; }
