@@ -218,6 +218,38 @@ static LRESULT CALLBACK _tray_wnd_proc(HWND hwnd, UINT msg, WPARAM wparam,
   return DefWindowProc(hwnd, msg, wparam, lparam);
 }
 
+static HMENU _tray_menu(struct tray_menu *m) {
+  HMENU hmenu = CreatePopupMenu();
+  for (int i = 0; m != NULL && m->text != NULL; m++, i++) {
+    if (strcmp(m->text, "-") == 0) {
+      InsertMenu(hmenu, i, MF_SEPARATOR, TRUE, "");
+    } else {
+      MENUITEMINFO item;
+      memset(&item, 0, sizeof(item));
+      item.cbSize = sizeof(MENUITEMINFO);
+      item.fMask = MIIM_ID | MIIM_TYPE | MIIM_STATE | MIIM_DATA;
+      item.fType = 0;
+      item.fState = 0;
+      if (m->submenu != NULL) {
+        item.fMask = item.fMask | MIIM_SUBMENU;
+        item.hSubMenu = _tray_menu(m->submenu);
+      }
+      if (m->disabled) {
+        item.fState |= MFS_DISABLED;
+      }
+      if (m->checked) {
+        item.fState |= MFS_CHECKED;
+      }
+      item.wID = i + ID_TRAY_FIRST;
+      item.dwTypeData = m->text;
+      item.dwItemData = (ULONG_PTR)m;
+
+      InsertMenuItem(hmenu, i, TRUE, &item);
+    }
+  }
+  return hmenu;
+}
+
 static int tray_init(struct tray *tray) {
   memset(&wc, 0, sizeof(wc));
   wc.cbSize = sizeof(WNDCLASSEX);
@@ -263,32 +295,7 @@ static int tray_loop(int blocking) {
 
 static void tray_update(struct tray *tray) {
   HMENU prevmenu = hmenu;
-  int i = 0;
-  hmenu = CreatePopupMenu();
-  for (struct tray_menu *m = tray->menu; m != NULL && m->text != NULL;
-       m++, i++) {
-    if (strcmp(m->text, "-") == 0) {
-      InsertMenu(hmenu, i, MF_SEPARATOR, TRUE, "");
-    } else {
-      MENUITEMINFO item;
-      memset(&item, 0, sizeof(item));
-      item.cbSize = sizeof(MENUITEMINFO);
-      item.fMask = MIIM_ID | MIIM_TYPE | MIIM_STATE | MIIM_DATA;
-      item.fType = 0;
-      item.fState = 0;
-      if (m->disabled) {
-        item.fState |= MFS_DISABLED;
-      }
-      if (m->checked) {
-        item.fState |= MFS_CHECKED;
-      }
-      item.wID = i + ID_TRAY_FIRST;
-      item.dwTypeData = m->text;
-      item.dwItemData = (ULONG_PTR)m;
-
-      InsertMenuItem(hmenu, i, TRUE, &item);
-    }
-  }
+  hmenu = _tray_menu(tray->menu);
   SendMessage(hwnd, WM_INITMENUPOPUP, (WPARAM)hmenu, 0);
   HICON icon;
   ExtractIconEx(tray->icon, 0, NULL, &icon, 1);
