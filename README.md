@@ -38,7 +38,6 @@ Before you can compile `tray`, you'll need to add an environment definition befo
 ```
 
 **For Mac:**
-**For Windows:**
 ```c
 #include <stdio.h>
 #include <string.h>
@@ -48,11 +47,6 @@ Before you can compile `tray`, you'll need to add an environment definition befo
 #include "tray.h"
 ...
 ```
-
-// For Linux:
-//#define TRAY_APPINDICATOR 1
-// For Mac:
-//#define TRAY_APPKIT 1
 
 # Demo
 
