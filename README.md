@@ -11,6 +11,65 @@ Works well on:
 
 There is also a stub implementation that returns errors on attempt to create a tray menu.
 
+# Setup
+
+Before you can compile `tray`, you'll need to add an environment definition before the line where you include `tray.h`. 
+
+**For Windows:**
+```c
+#include <stdio.h>
+#include <string.h>
+
+#define TRAY_WINAPI 1
+
+#include "tray.h"
+...
+```
+
+**For Linux:**
+```c
+#include <stdio.h>
+#include <string.h>
+
+#define TRAY_APPINDICATOR 1
+
+#include "tray.h"
+...
+```
+
+**For Mac:**
+**For Windows:**
+```c
+#include <stdio.h>
+#include <string.h>
+
+#define TRAY_APPKIT 1
+
+#include "tray.h"
+...
+```
+
+// For Linux:
+//#define TRAY_APPINDICATOR 1
+// For Mac:
+//#define TRAY_APPKIT 1
+
+# Demo
+
+The included example `.c` files can be compiled based on your environment.
+
+For example, to compile and run the program on Windows: 
+
+```shell
+$> gcc example_windows.c [Enter]
+``` 
+
+This will compile and build `a.out`. To run it: 
+
+```
+$> a [Enter]
+```
+
 # Example
 
 ```c
