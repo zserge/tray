@@ -5,7 +5,7 @@ else ifeq ($(shell uname -s),Linux)
 	TRAY_CFLAGS := -DTRAY_APPINDICATOR=1 $(shell pkg-config --cflags appindicator3-0.1)
 	TRAY_LDFLAGS := $(shell pkg-config --libs appindicator3-0.1)
 else ifeq ($(shell uname -s),Darwin)
-	TRAY_CFLAGS := -DTRAY_APPKIT=1 -x objective-c
+	TRAY_CFLAGS := -DTRAY_APPKIT=1
 	TRAY_LDFLAGS := -framework Cocoa
 endif
 

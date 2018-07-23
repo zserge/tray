@@ -136,7 +136,7 @@ array must have text field set to NULL.
 * [x] Checked/unchecked menu items
 * [x] Nested menus
 * [ ] Icons for menu items
-* [ ] Rewrite ObjC code in C using ObjC Runtime (now ObjC code breaks many linters and static analyzers)
+* [x] Rewrite ObjC code in C using ObjC Runtime (now ObjC code breaks many linters and static analyzers)
 * [ ] Call GTK code using dlopen/dlsym (to make binaries run safely if Gtk libraries are not available)
 
 ## License
