@@ -230,6 +230,7 @@ static LRESULT CALLBACK _tray_wnd_proc(HWND hwnd, UINT msg, WPARAM wparam,
     if (lparam == WM_LBUTTONUP || lparam == WM_RBUTTONUP) {
       POINT p;
       GetCursorPos(&p);
+      SetForegroundWindow(hwnd);
       WORD cmd = TrackPopupMenu(hmenu, TPM_LEFTALIGN | TPM_RIGHTBUTTON |
                                            TPM_RETURNCMD | TPM_NONOTIFY,
                                 p.x, p.y, 0, hwnd, NULL);
