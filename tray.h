@@ -5,6 +5,7 @@ struct tray_menu;
 
 struct tray {
   char *icon;
+  char *tooltip;
   struct tray_menu *menu;
 };
 
@@ -342,6 +343,10 @@ static void tray_update(struct tray *tray) {
     DestroyIcon(nid.hIcon);
   }
   nid.hIcon = icon;
+  if(tray->tooltip != 0 && strlen(tray->tooltip) > 0) {
+    strncpy(nid.szTip, tray->tooltip, sizeof(nid.szTip));
+    nid.uFlags |= NIF_TIP;
+  }
   Shell_NotifyIcon(NIM_MODIFY, &nid);
 
   if (prevmenu != NULL) {
