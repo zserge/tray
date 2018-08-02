@@ -309,9 +309,12 @@ static int tray_init(struct tray *tray) {
   nid.cbSize = sizeof(NOTIFYICONDATA);
   nid.hWnd = hwnd;
   nid.uID = 0;
-  nid.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP;
+  nid.uFlags = NIF_ICON | NIF_MESSAGE;
   nid.uCallbackMessage = WM_TRAY_CALLBACK_MESSAGE;
-  strncpy(nid.szTip, tray->tooltip, sizeof(nid.szTip));
+  if(tray->tooltip != 0 && strlen(tray->tooltip) > 0) {
+    strncpy(nid.szTip, tray->tooltip, sizeof(nid.szTip));
+    nid.uFlags |= NIF_TIP;
+  }
   Shell_NotifyIcon(NIM_ADD, &nid);
 
   tray_update(tray);
