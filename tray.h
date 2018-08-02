@@ -5,6 +5,7 @@ struct tray_menu;
 
 struct tray {
   char *icon;
+  char *tooltip;
   struct tray_menu *menu;
 };
 
@@ -308,8 +309,9 @@ static int tray_init(struct tray *tray) {
   nid.cbSize = sizeof(NOTIFYICONDATA);
   nid.hWnd = hwnd;
   nid.uID = 0;
-  nid.uFlags = NIF_ICON | NIF_MESSAGE;
+  nid.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP;
   nid.uCallbackMessage = WM_TRAY_CALLBACK_MESSAGE;
+  strncpy(nid.szTip, tray->tooltip, sizeof(nid.szTip));
   Shell_NotifyIcon(NIM_ADD, &nid);
 
   tray_update(tray);

@@ -56,29 +56,32 @@ static void submenu_cb(struct tray_menu *item) {
 // Test tray init
 static struct tray tray = {
     .icon = TRAY_ICON1,
+#if TRAY_WINAPI
+    .tooltip = "Tray",
+#endif
     .menu =
-        (struct tray_menu[]){
+        (struct tray_menu[]) {
             {.text = "Hello", .cb = hello_cb},
             {.text = "Checked", .checked = 1, .cb = toggle_cb},
             {.text = "Disabled", .disabled = 1},
             {.text = "-"},
             {.text = "SubMenu",
              .submenu =
-                 (struct tray_menu[]){
+                 (struct tray_menu[]) {
                      {.text = "FIRST", .checked = 1, .cb = submenu_cb},
                      {.text = "SECOND",
                       .submenu =
-                          (struct tray_menu[]){
+                          (struct tray_menu[]) {
                               {.text = "THIRD",
                                .submenu =
-                                   (struct tray_menu[]){
+                                   (struct tray_menu[]) {
                                        {.text = "7", .cb = submenu_cb},
                                        {.text = "-"},
                                        {.text = "8", .cb = submenu_cb},
                                        {.text = NULL}}},
                               {.text = "FOUR",
                                .submenu =
-                                   (struct tray_menu[]){
+                                   (struct tray_menu[]) {
                                        {.text = "5", .cb = submenu_cb},
                                        {.text = "6", .cb = submenu_cb},
                                        {.text = NULL}}},
