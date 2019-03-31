@@ -59,13 +59,13 @@ static struct tray tray = {
     .menu =
         (struct tray_menu[]){
             {.text = "Hello", .cb = hello_cb},
-            {.text = "Checked", .checked = 1, .cb = toggle_cb},
+            {.text = "Checked", .checked = 1, .checkbox = 1, .cb = toggle_cb},
             {.text = "Disabled", .disabled = 1},
             {.text = "-"},
             {.text = "SubMenu",
              .submenu =
                  (struct tray_menu[]){
-                     {.text = "FIRST", .checked = 1, .cb = submenu_cb},
+                     {.text = "FIRST", .checked = 1, .checkbox = 1, .cb = submenu_cb},
                      {.text = "SECOND",
                       .submenu =
                           (struct tray_menu[]){
