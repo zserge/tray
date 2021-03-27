@@ -9,7 +9,7 @@ struct tray {
 };
 
 struct tray_menu {
-  char *text;
+  const char *text;
   int disabled;
   int checked;
 
@@ -279,7 +279,7 @@ static HMENU _tray_menu(struct tray_menu *m, UINT *id) {
         item.fState |= MFS_CHECKED;
       }
       item.wID = *id;
-      item.dwTypeData = m->text;
+      item.dwTypeData = (LPSTR)m->text;
       item.dwItemData = (ULONG_PTR)m;
 
       InsertMenuItem(hmenu, *id, TRUE, &item);
