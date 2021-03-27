@@ -9,7 +9,7 @@ Works well on:
 * Windows XP or newer (shellapi.h)
 * MacOS (Cocoa/AppKit)
 
-There is also a stub implementation that returns errors on attempt to create a tray menu.
+The code is C++ friendly and will compile fine in C++98 and up.
 
 # Setup
 
