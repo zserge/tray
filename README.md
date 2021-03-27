@@ -48,6 +48,8 @@ Before you can compile `tray`, you'll need to add an environment definition befo
 ...
 ```
 
+Failure to define one of the three above will result in a compile-time error.
+
 # Demo
 
 The included example `.c` files can be compiled based on your environment.
