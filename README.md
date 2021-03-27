@@ -9,7 +9,7 @@ Works well on:
 * Windows XP or newer (shellapi.h)
 * MacOS (Cocoa/AppKit)
 
-There is also a stub implementation that returns errors on attempt to create a tray menu.
+The code is C++ friendly and will compile fine in C++98 and up.
 
 # Setup
 
@@ -20,7 +20,7 @@ Before you can compile `tray`, you'll need to add an environment definition befo
 #include <stdio.h>
 #include <string.h>
 
-#define TRAY_WINAPI 1
+#define TRAY_WINAPI
 
 #include "tray.h"
 ...
@@ -31,7 +31,7 @@ Before you can compile `tray`, you'll need to add an environment definition befo
 #include <stdio.h>
 #include <string.h>
 
-#define TRAY_APPINDICATOR 1
+#define TRAY_APPINDICATOR
 
 #include "tray.h"
 ...
@@ -42,11 +42,13 @@ Before you can compile `tray`, you'll need to add an environment definition befo
 #include <stdio.h>
 #include <string.h>
 
-#define TRAY_APPKIT 1
+#define TRAY_APPKIT
 
 #include "tray.h"
 ...
 ```
+
+Failure to define one of the three above will result in a compile-time error.
 
 # Demo
 
@@ -67,12 +69,16 @@ $> a [Enter]
 # Example
 
 ```c
+struct tray_menu menus[] = {
+	{ "Toggle me", 0, 0, toggle_cb, NULL },
+	{ "-"        , 0, 0, NULL     , NULL },
+	{ "Quit"     , 0, 0, quit_cb  , NULL },
+	{ NULL       , 0, 0, NULL     , NULL }
+};
+
 struct tray tray = {
     .icon = "icon.png",
-    .menu = (struct tray_menu[]){{"Toggle me", 0, 0, toggle_cb, NULL},
-                                 {"-", 0, 0, NULL, NULL},
-                                 {"Quit", 0, 0, quit_cb, NULL},
-                                 {NULL, 0, 0, NULL, NULL}},
+    .menu = menus,
 };
 
 void toggle_cb(struct tray_menu *item) {

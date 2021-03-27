@@ -4,12 +4,12 @@
 struct tray_menu;
 
 struct tray {
-  char *icon;
+  const char *icon;
   struct tray_menu *menu;
 };
 
 struct tray_menu {
-  char *text;
+  const char *text;
   int disabled;
   int checked;
 
@@ -279,7 +279,7 @@ static HMENU _tray_menu(struct tray_menu *m, UINT *id) {
         item.fState |= MFS_CHECKED;
       }
       item.wID = *id;
-      item.dwTypeData = m->text;
+      item.dwTypeData = (LPSTR)m->text;
       item.dwItemData = (ULONG_PTR)m;
 
       InsertMenuItem(hmenu, *id, TRUE, &item);
@@ -361,10 +361,7 @@ static void tray_exit() {
   UnregisterClass(WC_TRAY_CLASS_NAME, GetModuleHandle(NULL));
 }
 #else
-static int tray_init(struct tray *tray) { return -1; }
-static int tray_loop(int blocking) { return -1; }
-static void tray_update(struct tray *tray) {}
-static void tray_exit();
+#error Please define TRAY_WINAPI, TRAY_APPINDICATOR or TRAY_APPKIT before including this file.
 #endif
 
 #endif /* TRAY_H */
