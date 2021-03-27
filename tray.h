@@ -361,10 +361,7 @@ static void tray_exit() {
   UnregisterClass(WC_TRAY_CLASS_NAME, GetModuleHandle(NULL));
 }
 #else
-static int tray_init(struct tray *tray) { return -1; }
-static int tray_loop(int blocking) { return -1; }
-static void tray_update(struct tray *tray) {}
-static void tray_exit();
+#error Please define TRAY_WINAPI, TRAY_APPINDICATOR or TRAY_APPKIT before including this file.
 #endif
 
 #endif /* TRAY_H */
