@@ -67,12 +67,16 @@ $> a [Enter]
 # Example
 
 ```c
+struct tray_menu menus[] = {
+	{ "Toggle me", 0, 0, toggle_cb, NULL },
+	{ "-"        , 0, 0, NULL     , NULL },
+	{ "Quit"     , 0, 0, quit_cb  , NULL },
+	{ NULL       , 0, 0, NULL     , NULL }
+};
+
 struct tray tray = {
     .icon = "icon.png",
-    .menu = (struct tray_menu[]){{"Toggle me", 0, 0, toggle_cb, NULL},
-                                 {"-", 0, 0, NULL, NULL},
-                                 {"Quit", 0, 0, quit_cb, NULL},
-                                 {NULL, 0, 0, NULL, NULL}},
+    .menu = menus,
 };
 
 void toggle_cb(struct tray_menu *item) {
