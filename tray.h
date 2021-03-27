@@ -4,7 +4,7 @@
 struct tray_menu;
 
 struct tray {
-  char *icon;
+  const char *icon;
   struct tray_menu *menu;
 };
 
