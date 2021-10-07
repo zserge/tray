@@ -319,9 +319,9 @@ static int tray_init(struct tray *tray) {
 static int tray_loop(int blocking) {
   MSG msg;
   if (blocking) {
-    GetMessage(&msg, NULL, 0, 0);
+    GetMessage(&msg, hwnd, 0, 0);
   } else {
-    PeekMessage(&msg, NULL, 0, 0, PM_REMOVE);
+    PeekMessage(&msg, hwnd, 0, 0, PM_REMOVE);
   }
   if (msg.message == WM_QUIT) {
     return -1;
