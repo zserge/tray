@@ -364,7 +364,7 @@ static void tray_exit() {
 static int tray_init(struct tray *tray) { return -1; }
 static int tray_loop(int blocking) { return -1; }
 static void tray_update(struct tray *tray) {}
-static void tray_exit();
+static void tray_exit() {}
 #endif
 
 #endif /* TRAY_H */
